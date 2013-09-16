@@ -2,14 +2,14 @@ package crud
 
 import (
 	"fmt"
-	"time"
 	"reflect"
 	"strings"
+	"time"
 )
 
-/* 
+/*
 Update syncs a tagged object with an existing record in the database.
- 
+
 The metadata contained in the crud tags don't include the table name or
 the name of the SQL primary ID, so they have to be passed in manually.
 If the object passed in as arg does not have a primary key set (or the
@@ -37,10 +37,10 @@ func Update(db DbIsh, table, sqlIdFieldName string, arg interface{}) error {
 		} else {
 			fieldVal := val.FieldByName(goName).Interface()
 
-			if timeVal, ok := fieldVal.(time.Time) ; ok && meta.Unix {
+			if timeVal, ok := fieldVal.(time.Time); ok && meta.Unix {
 				fieldVal = timeVal.Unix()
 
-			} else if timeVal, ok := fieldVal.(*time.Time) ; ok && meta.Unix && timeVal != nil {
+			} else if timeVal, ok := fieldVal.(*time.Time); ok && meta.Unix && timeVal != nil {
 				fieldVal = timeVal.Unix()
 			}
 
@@ -60,7 +60,7 @@ func Update(db DbIsh, table, sqlIdFieldName string, arg interface{}) error {
 	return er
 }
 
-/* 
+/*
 Insert creates a new record in the datastore.
 */
 func Insert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, error) {
@@ -84,10 +84,10 @@ func Insert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 		goName := meta.GoName
 		fieldVal := val.FieldByName(goName).Interface()
 
-		if timeVal, ok := fieldVal.(time.Time) ; ok && meta.Unix {
+		if timeVal, ok := fieldVal.(time.Time); ok && meta.Unix {
 			fieldVal = timeVal.Unix()
 
-		} else if timeVal, ok := fieldVal.(*time.Time) ; ok && meta.Unix && timeVal != nil {
+		} else if timeVal, ok := fieldVal.(*time.Time); ok && meta.Unix && timeVal != nil {
 			fieldVal = timeVal.Unix()
 		}
 
@@ -97,6 +97,62 @@ func Insert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 	}
 
 	q := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, strings.Join(sqlFields, ", "), strings.Join(placeholders, ", "))
+
+	res, er := db.Exec(q, newValues...)
+	if er != nil {
+		return 0, er
+	}
+
+	return res.LastInsertId()
+}
+
+/*
+Upsert creates a new record in the datastore.
+*/
+func Upsert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, error) {
+	if !EnableUpsert {
+		return Insert(db, table, sqlIdFieldName, arg)
+	}
+
+	val := indirectV(reflect.ValueOf(arg))
+	ty := val.Type()
+
+	fieldMap, er := sqlToGoFields(ty)
+	if er != nil {
+		return 0, er
+	}
+
+	sqlFields := make([]string, len(fieldMap))[:0]
+	newValues := make([]interface{}, len(fieldMap))[:0]
+	placeholders := make([]string, len(fieldMap))[:0]
+
+	sqlUpsertFields := make([]string, len(fieldMap))[:0]
+
+	for sqlName, meta := range fieldMap {
+		if sqlName == sqlIdFieldName {
+			continue
+		}
+
+		goName := meta.GoName
+		fieldVal := val.FieldByName(goName).Interface()
+
+		if timeVal, ok := fieldVal.(time.Time); ok && meta.Unix {
+			fieldVal = timeVal.Unix()
+
+		} else if timeVal, ok := fieldVal.(*time.Time); ok && meta.Unix && timeVal != nil {
+			fieldVal = timeVal.Unix()
+		}
+
+		sqlFields = append(sqlFields, sqlName)
+		newValues = append(newValues, fieldVal)
+		placeholders = append(placeholders, "?")
+
+		sqlUpsertFields = append(sqlUpsertFields, fmt.Sprintf("%s = ?", sqlName))
+	}
+
+	q := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s", table, strings.Join(sqlFields, ", "), strings.Join(placeholders, ", "), strings.Join(sqlUpsertFields, ", "))
+
+	newValues = append(newValues, newValues...)
 
 	res, er := db.Exec(q, newValues...)
 	if er != nil {
