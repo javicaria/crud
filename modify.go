@@ -29,6 +29,10 @@ func Update(db DbIsh, table, sqlIdFieldName string, arg interface{}) error {
 	var id int64 = 0
 
 	for sqlName, meta := range fieldMap {
+		if meta.ReadOnly {
+			continue
+		}
+
 		goName := meta.GoName
 
 		if sqlName == sqlIdFieldName {
@@ -77,6 +81,10 @@ func Insert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 	placeholders := make([]string, len(fieldMap))[:0]
 
 	for sqlName, meta := range fieldMap {
+		if meta.ReadOnly {
+			continue
+		}
+
 		if sqlName == sqlIdFieldName {
 			continue
 		}
@@ -129,6 +137,10 @@ func Upsert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 	sqlUpsertFields := make([]string, len(fieldMap))[:0]
 
 	for sqlName, meta := range fieldMap {
+		if meta.ReadOnly {
+			continue
+		}
+
 		if sqlName == sqlIdFieldName {
 			continue
 		}
