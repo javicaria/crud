@@ -13,8 +13,8 @@ func ExampleInsert() {
 
 	/* Foo is defined elsewhere and has appropriately-tagged fields */
 	f := Foo{
-		Num: 42,
-		Str: "etc",
+		Num:  42,
+		Str:  "etc",
 		Time: time.Now(),
 	}
 
@@ -35,12 +35,12 @@ func ExampleUpdate() {
 
 	/* f is a Foo instance obtained from somewhere and modified */
 	f := Foo{
-		Id: 4,
+		Id:  4,
 		Num: 49,
 	}
 
 	/* "foo" is the SQL table name, "foo_id" is the primary key for this type */
-	if er := Update(db, "foo", "foo_id", f) ; er != nil {
+	if er := Update(db, "foo", "foo_id", f); er != nil {
 		/* Handle the error */
 	}
 }
@@ -63,7 +63,7 @@ func ExampleScan() {
 	for rows.Next() {
 		var f Foo
 
-		if er := Scan(rows, &f) ; er != nil {
+		if er := Scan(rows, &f); er != nil {
 			/* Handle error */
 		}
 

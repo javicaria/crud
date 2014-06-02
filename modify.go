@@ -79,6 +79,7 @@ func Insert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 	sqlFields := make([]string, len(fieldMap))[:0]
 	newValues := make([]interface{}, len(fieldMap))[:0]
 	placeholders := make([]string, len(fieldMap))[:0]
+	placeholderN := 1
 
 	for sqlName, meta := range fieldMap {
 		if meta.ReadOnly {
@@ -101,17 +102,24 @@ func Insert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 
 		sqlFields = append(sqlFields, sqlName)
 		newValues = append(newValues, fieldVal)
-		placeholders = append(placeholders, "?")
+		placeholders = append(placeholders, PlaceholderFormat(placeholderN))
+		placeholderN++
 	}
 
 	q := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, strings.Join(sqlFields, ", "), strings.Join(placeholders, ", "))
 
 	res, er := db.Exec(q, newValues...)
 	if er != nil {
+		fmt.Print(q)
 		return 0, er
 	}
 
-	return res.LastInsertId()
+	id, err := res.LastInsertId()
+	if err != nil && NoLastInsertId {
+		return 0, nil
+	}
+
+	return id, nil
 }
 
 /*
@@ -133,6 +141,7 @@ func Upsert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 	sqlFields := make([]string, len(fieldMap))[:0]
 	newValues := make([]interface{}, len(fieldMap))[:0]
 	placeholders := make([]string, len(fieldMap))[:0]
+	placeholderN := 1
 
 	sqlUpsertFields := make([]string, len(fieldMap))[:0]
 
@@ -157,7 +166,8 @@ func Upsert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 
 		sqlFields = append(sqlFields, sqlName)
 		newValues = append(newValues, fieldVal)
-		placeholders = append(placeholders, "?")
+		placeholders = append(placeholders, PlaceholderFormat(placeholderN))
+		placeholderN++
 
 		sqlUpsertFields = append(sqlUpsertFields, fmt.Sprintf("%s = ?", sqlName))
 	}
@@ -171,5 +181,10 @@ func Upsert(db DbIsh, table, sqlIdFieldName string, arg interface{}) (int64, err
 		return 0, er
 	}
 
-	return res.LastInsertId()
+	id, err := res.LastInsertId()
+	if err != nil && NoLastInsertId {
+		return 0, nil
+	}
+
+	return id, err
 }

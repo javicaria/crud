@@ -1,5 +1,9 @@
 package crud
 
 var (
-	EnableUpsert bool
+	EnableUpsert      bool
+	NoLastInsertId    bool
+	PlaceholderFormat func(id int) string = func(id int) string {
+		return "?"
+	}
 )

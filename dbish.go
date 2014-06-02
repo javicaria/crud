@@ -2,8 +2,8 @@ package crud
 
 import "database/sql"
 
-/* 
-DbIsh provides an interface that is implemented by both sql.DB and sql.Tx. 
+/*
+DbIsh provides an interface that is implemented by both sql.DB and sql.Tx.
 
 All crud methods accept DbIsh's to allow the end-user to use the interface both
 within and without transactions.
