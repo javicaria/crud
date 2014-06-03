@@ -2,7 +2,7 @@
 Package crud provides a reflection-based wrapper around database/sql for common operations.
 
 crud allows you to annotate struct fields with corresponding SQL field names.
-Types annotated as such can then be easily inserted/updated/scanned from 
+Types annotated as such can then be easily inserted/updated/scanned from
 sql/database connections without incurring the usual programmer overhead.
 crud does not handle schema generation; it simply reduces the amount of
 boilerplate you'd need to write to interact with an existing schema.
@@ -52,11 +52,11 @@ noisy code increases significantly. crud provides the following alternative:
 
 The magic of reflection handles the rest.
 
-Each struct field that has a corresponding SQL row must be tagged with the SQL 
+Each struct field that has a corresponding SQL row must be tagged with the SQL
 row name. For time types, the "unix" tag can be used to trigger marshalling between
-the Go time.Time type and a numeric SQL field. 
+the Go time.Time type and a numeric SQL field.
 
-Any pointer fields with a corresponding sql.Null* type are marshalled to/from 
+Any pointer fields with a corresponding sql.Null* type are marshalled to/from
 the Null type for proper interaction with database/sql.
 
 Despite the wonder, crud is not without drawbacks. As with all interfaces that

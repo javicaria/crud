@@ -1,41 +1,41 @@
 package crud
 
 import (
-	"time"
-	"testing"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
+	"testing"
+	"time"
 )
 
 type Foo struct {
-	Id int64 `crud:"foo_id"`
-	Num int64 `crud:"foo_num"`
-	Str string `crud:"foo_str"`
+	Id   int64     `crud:"foo_id"`
+	Num  int64     `crud:"foo_num"`
+	Str  string    `crud:"foo_str"`
 	Time time.Time `crud:"foo_time"`
 }
 
 type OptionalFoo struct {
-	Int8 *int8 `crud:"o_int8"`
-	Int16 *int16 `crud:"o_int16"`
-	Int32 *int32 `crud:"o_int32"`
-	Int64 *int64 `crud:"o_int64"`
+	Int8    *int8    `crud:"o_int8"`
+	Int16   *int16   `crud:"o_int16"`
+	Int32   *int32   `crud:"o_int32"`
+	Int64   *int64   `crud:"o_int64"`
 	Float32 *float32 `crud:"o_float32"`
 	Float64 *float64 `crud:"o_float64"`
-	Bool *bool `crud:"o_bool"`
-	String *string `crud:"o_string"`
+	Bool    *bool    `crud:"o_bool"`
+	String  *string  `crud:"o_string"`
 }
 
 type TimeFoo struct {
-	Int time.Time `crud:"time_int,unix"`
-	IntPtr *time.Time `crud:"time_int_ptr,unix"`
-	Time time.Time `crud:"time_val"`
+	Int     time.Time  `crud:"time_int,unix"`
+	IntPtr  *time.Time `crud:"time_int_ptr,unix"`
+	Time    time.Time  `crud:"time_val"`
 	TimePtr *time.Time `crud:"time_val_ptr"`
 }
 
 func newFoo() Foo {
 	return Foo{
-		Num: 42,
-		Str: "PANIC",
+		Num:  42,
+		Str:  "PANIC",
 		Time: time.Unix(1338, 0).UTC(),
 	}
 }
@@ -104,15 +104,15 @@ func TestSingleFoo(t *testing.T) {
 
 	f := newFoo()
 
-	if er := Update(db, "foo", "foo_id", f) ; er == nil {
+	if er := Update(db, "foo", "foo_id", f); er == nil {
 		t.Errorf("Expected Update to error on zero-id field")
 	}
 
-	if er := Update(db, "foo", "does_not_exist", f) ; er == nil {
+	if er := Update(db, "foo", "does_not_exist", f); er == nil {
 		t.Errorf("Expected Update to error on non-existant ID field")
 	}
 
-	if er := Update(db, "foo", "foo_id", "") ; er == nil {
+	if er := Update(db, "foo", "foo_id", ""); er == nil {
 		t.Errorf("Expected Update to error on non-struct type")
 	}
 
@@ -137,7 +137,7 @@ func TestSingleFoo(t *testing.T) {
 		t.Fatalf("No rows appear to have been inserted")
 	}
 
-	if er := Scan(rows, &f2) ; er != nil {
+	if er := Scan(rows, &f2); er != nil {
 		t.Fatal(er)
 	}
 
@@ -167,14 +167,14 @@ func TestModifyFoo(t *testing.T) {
 
 	f := newFoo()
 
-	if f.Id, er = Insert(db, "foo", "foo_id", f) ; er != nil {
+	if f.Id, er = Insert(db, "foo", "foo_id", f); er != nil {
 		t.Fatal(er)
 	}
 
 	f.Num = 3
 	f.Str = "hello"
 
-	if er := Update(db, "foo", "foo_id", f) ; er != nil {
+	if er := Update(db, "foo", "foo_id", f); er != nil {
 		t.Fatal(er)
 	}
 
@@ -185,7 +185,7 @@ func TestModifyFoo(t *testing.T) {
 
 	foos := []Foo{}
 
-	if er := ScanAll(rows, &foos) ; er != nil {
+	if er := ScanAll(rows, &foos); er != nil {
 		t.Fatal(er)
 	}
 
@@ -211,14 +211,14 @@ func TestModifyFooByPtr(t *testing.T) {
 
 	f := newFoo()
 
-	if f.Id, er = Insert(db, "foo", "foo_id", &f) ; er != nil {
+	if f.Id, er = Insert(db, "foo", "foo_id", &f); er != nil {
 		t.Fatal(er)
 	}
 
 	f.Num = 3
 	f.Str = "hello"
 
-	if er := Update(db, "foo", "foo_id", &f) ; er != nil {
+	if er := Update(db, "foo", "foo_id", &f); er != nil {
 		t.Fatal(er)
 	}
 
@@ -229,7 +229,7 @@ func TestModifyFooByPtr(t *testing.T) {
 
 	foos := []Foo{}
 
-	if er := ScanAll(rows, &foos) ; er != nil {
+	if er := ScanAll(rows, &foos); er != nil {
 		t.Fatal(er)
 	}
 
@@ -261,7 +261,7 @@ func TestMultipleFoo(t *testing.T) {
 		Num: 12,
 	}
 
-	if f1.Id, er = Insert(db, "foo", "foo_id", f1) ; er != nil {
+	if f1.Id, er = Insert(db, "foo", "foo_id", f1); er != nil {
 		t.Fatal(er)
 	}
 
@@ -271,7 +271,7 @@ func TestMultipleFoo(t *testing.T) {
 		t.Fatal(er)
 	}
 
-	if er := ScanAll(rows, &foos) ; er != nil {
+	if er := ScanAll(rows, &foos); er != nil {
 		t.Fatal(er)
 	}
 
@@ -287,7 +287,7 @@ func TestMultipleFoo(t *testing.T) {
 		t.Errorf("ScanAll mismatch: Num: %d != %d", f1.Num, foos[0].Num)
 	}
 
-	if f2.Id, er = Insert(db, "foo", "foo_id", f2) ; er != nil {
+	if f2.Id, er = Insert(db, "foo", "foo_id", f2); er != nil {
 		t.Fatal(er)
 	}
 
@@ -297,7 +297,7 @@ func TestMultipleFoo(t *testing.T) {
 		t.Fatal(er)
 	}
 
-	if er := ScanAll(rows, &foos) ; er != nil {
+	if er := ScanAll(rows, &foos); er != nil {
 		t.Fatal(er)
 	}
 
@@ -343,17 +343,17 @@ func TestOptionalFoo(t *testing.T) {
 	var String string = "string"
 
 	f1 := OptionalFoo{
-		Int8: &Int8,
-		Int16: &Int16,
-		Int32: &Int32,
-		Int64: &Int64,
+		Int8:    &Int8,
+		Int16:   &Int16,
+		Int32:   &Int32,
+		Int64:   &Int64,
 		Float32: &Float32,
 		Float64: &Float64,
-		Bool: &Bool,
-		String: &String,
+		Bool:    &Bool,
+		String:  &String,
 	}
 
-	if _, er := Insert(db, "ofoo", "", f1) ; er != nil {
+	if _, er := Insert(db, "ofoo", "", f1); er != nil {
 		t.Fatal(er)
 	}
 
@@ -369,7 +369,7 @@ func TestOptionalFoo(t *testing.T) {
 
 	f2 := OptionalFoo{}
 
-	if er := Scan(rows, &f2) ; er != nil {
+	if er := Scan(rows, &f2); er != nil {
 		t.Fatal(er)
 	}
 
@@ -439,7 +439,7 @@ func TestNullOptionalFoo(t *testing.T) {
 
 	f1 := OptionalFoo{}
 
-	if _, er := Insert(db, "ofoo", "", f1) ; er != nil {
+	if _, er := Insert(db, "ofoo", "", f1); er != nil {
 		t.Fatal(er)
 	}
 
@@ -455,7 +455,7 @@ func TestNullOptionalFoo(t *testing.T) {
 
 	f2 := OptionalFoo{}
 
-	if er := Scan(rows, &f2) ; er != nil {
+	if er := Scan(rows, &f2); er != nil {
 		t.Fatal(er)
 	}
 
@@ -499,14 +499,14 @@ func TestTimeMarshalling(t *testing.T) {
 	}
 
 	/* Ugh, convert to Unix for granularity reasons; strip off TZ data
-	 * because SQLite doesn't understand them and they affect both .Equal 
+	 * because SQLite doesn't understand them and they affect both .Equal
 	 * and .Unix */
 	now := time.Unix(time.Now().Unix(), 0).UTC()
 
 	foo1 := TimeFoo{
-		Int: now,
-		IntPtr: &now,
-		Time: now,
+		Int:     now,
+		IntPtr:  &now,
+		Time:    now,
 		TimePtr: &now,
 	}
 
@@ -530,7 +530,7 @@ func TestTimeMarshalling(t *testing.T) {
 		}
 	}
 
-	if _, er := Insert(db, "tfoo", "", foo1) ; er != nil {
+	if _, er := Insert(db, "tfoo", "", foo1); er != nil {
 		t.Fatal(er)
 	}
 
@@ -547,7 +547,7 @@ func TestTimeMarshalling(t *testing.T) {
 		var tmpInt int64
 		var tmpIntPtr sql.NullInt64
 
-		if er := rows.Scan(&tmpInt, &tmpIntPtr, &foo2.Time, &foo2.TimePtr) ; er != nil {
+		if er := rows.Scan(&tmpInt, &tmpIntPtr, &foo2.Time, &foo2.TimePtr); er != nil {
 			rows.Close()
 			t.Error(er)
 
@@ -574,7 +574,7 @@ func TestTimeMarshalling(t *testing.T) {
 		t.Errorf("Rows are gone?")
 
 	} else {
-		if er := Scan(rows, &foo2) ; er != nil {
+		if er := Scan(rows, &foo2); er != nil {
 			rows.Close()
 			t.Error(er)
 
